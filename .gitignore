@@ -1,0 +1,23 @@
+# Disk images
+*.DSK
+
+# Build artifacts (keep source .asm, exclude .bin except boot.bin)
+*.bin
+!boot.bin
+
+# Test files
+test_*.asm
+test_*.bin
+boot_*.asm
+boot_*.bin
+!boot.asm
+!boot.bin
+
+# Intermediate build files
+A
+
+# OS files
+.DS_Store
+
+# Downloaded CP/M source (can be regenerated)
+cpm_build/
