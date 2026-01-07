@@ -1,9 +1,7 @@
-# Disk images
-*.DSK
-
-# Build artifacts (keep source .asm, exclude .bin except boot.bin)
+# Build artifacts (keep source .asm, exclude .bin except boot.bin and bios.bin)
 *.bin
 !boot.bin
+!bios.bin
 
 # Test files
 test_*.asm
@@ -21,3 +19,6 @@ A
 
 # Downloaded CP/M source (can be regenerated)
 cpm_build/
+
+# Downloaded software collection (clone from https://github.com/skx/cpm-dist)
+software/

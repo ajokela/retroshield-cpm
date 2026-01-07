@@ -1,8 +1,44 @@
 # CP/M 2.2 for RetroShield Z80
 
-This directory contains the BIOS and boot loader for running CP/M 2.2 on the RetroShield Z80.
+This directory contains everything needed to run CP/M 2.2 on the RetroShield Z80 - both in the Rust emulator and on **physical hardware** using an Arduino Mega with the KDRAM2560 DRAM shield.
 
-## Quick Start
+## Quick Start (Physical Hardware)
+
+### Hardware Required
+
+- Arduino Mega 2560
+- [Z80 RetroShield](https://www.8bitforce.com/projects/retroshield/)
+- [KDRAM2560](https://gitlab.com/8bitforce/kdram2560) (1MB DRAM shield)
+- MicroSD card module (wired to pins 4-7 for software SPI)
+- MicroSD card (≤32GB, FAT32 formatted)
+
+### Setup
+
+1. Install Arduino libraries:
+   - [KDRAM2560](https://gitlab.com/8bitforce/kdram2560) - clone to Arduino libraries folder
+   - [SdFat](https://github.com/greiman/SdFat) - install via Library Manager
+   - **Important**: Set `SPI_DRIVER_SELECT` to `2` in `SdFat/src/SdFatConfig.h`
+
+2. Wire the MicroSD module:
+   | MicroSD Pin | Arduino Pin |
+   |-------------|-------------|
+   | MISO | 4 |
+   | MOSI | 5 |
+   | SCK | 6 |
+   | CS | 7 |
+   | VCC | 5V |
+   | GND | GND |
+
+3. Copy files to SD card:
+   - `boot.bin` - Boot loader
+   - `CPM.SYS` - CP/M system
+   - `A.DSK`, `B.DSK` - Disk images (create with `cpm_disk.py`)
+
+4. Upload `kz80_cpm.ino` to Arduino Mega
+
+5. Open Serial Monitor at 115200 baud
+
+### Quick Start (Emulator)
 
 1. Obtain CP/M 2.2 CCP and BDOS binaries (see below)
 2. Build the system: `make`
@@ -43,9 +79,13 @@ Disk images are stored as raw files on the SD card:
 
 | File | Description |
 |------|-------------|
-| `boot.asm` | Boot loader (runs from ROM at 0x0000) |
-| `bios.asm` | CP/M BIOS for RetroShield hardware |
-| `Makefile` | Build system |
+| `kz80_cpm.ino` | Arduino sketch for physical hardware |
+| `boot.asm` | Boot loader source (runs from 0x0000) |
+| `boot.bin` | Assembled boot loader |
+| `bios.asm` | CP/M BIOS source for RetroShield |
+| `CPM.SYS` | Combined CCP + BDOS + BIOS system file |
+| `cpm_disk.py` | Python tool for managing disk images |
+| `Makefile` | Build system for Z80 assembly |
 
 ## Building
 
@@ -184,7 +224,42 @@ A>
 - Check serial connection (115200 baud, 8N1)
 - Verify memory map matches your configuration
 
-## Creating Bootable Disk Images
+## Disk Image Tool (cpm_disk.py)
+
+A Python tool for creating and managing CP/M disk images:
+
+```bash
+# Create an empty disk image
+python3 cpm_disk.py create A.DSK
+
+# List files on a disk
+python3 cpm_disk.py list A.DSK
+
+# Add a file to a disk
+python3 cpm_disk.py add A.DSK PROGRAM.COM
+
+# Extract a file from a disk
+python3 cpm_disk.py extract A.DSK PROGRAM.COM
+```
+
+### Adding Classic Software (Zork, etc.)
+
+```bash
+# Clone the CP/M software collection
+git clone https://github.com/skx/cpm-dist.git software/cpm-dist
+
+# Add Zork to A.DSK
+python3 cpm_disk.py add A.DSK software/cpm-dist/G/ZORK1.COM
+python3 cpm_disk.py add A.DSK software/cpm-dist/G/ZORK1.DAT
+python3 cpm_disk.py add A.DSK software/cpm-dist/G/ZORK2.COM
+python3 cpm_disk.py add A.DSK software/cpm-dist/G/ZORK2.DAT
+
+# Add Hitchhiker's Guide to B.DSK
+python3 cpm_disk.py add B.DSK software/cpm-dist/G/HITCH.COM
+python3 cpm_disk.py add B.DSK software/cpm-dist/G/HITCHHIK.DAT
+```
+
+## Creating Bootable Disk Images (Alternative: cpmtools)
 
 To copy files to CP/M disk images, use cpmtools:
 
